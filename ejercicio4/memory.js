@@ -25,11 +25,24 @@ class Card {
     #flip() {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.add("flipped");
+
+        this.isFlipped = true;
     }
 
     #unflip() {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.remove("flipped");
+        this.isFlipped = false;
+    }
+    toggleFlip(){
+        if(this.isFlipped){
+            this.#unflip();
+        } else{
+            this.#flip();
+        }
+    }
+    matches(otherCard){
+        return this.name === otherCard.name;
     }
 }
 
@@ -68,6 +81,20 @@ class Board {
             this.gameBoardElement.appendChild(card.element);
         });
     }
+    shuffleCards(){
+        for(let i = this.cards.length - 1; i > 0; i--){
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+        }
+    }
+    flipDownAllCards(){
+        this.cards.forEach((card) => card.toggleFlip());
+    }
+    reset(){
+        this.shuffleCards();
+        this.flipDownAllCards();
+        this.render();
+    }
 
     onCardClicked(card) {
         if (this.onCardClick) {
@@ -101,6 +128,26 @@ class MemoryGame {
                 setTimeout(() => this.checkForMatch(), this.flipDuration);
             }
         }
+    }
+    checkForMatch(){
+        const[firstCard, secondCard]=this.flippedCards;
+        if(firstCard.matches(secondCard)){
+            this.matchedCards.push(firstCard, secondCard);
+            this.flippedCards = [];
+        } else{
+            firstCard.toggleFlip();
+            secondCard.toggleFlip();
+            this.flippedCards = [];
+        }
+        if(this.matchedCards.length === this.board.cards.length){
+            alert("Has ganado");
+            this.resetGame();
+        }
+    }
+    resetGame(){
+        this.flippedCards = [];
+        this.matchedCards = [];
+        this.board.reset();
     }
 }
 
